@@ -28,19 +28,10 @@ const sendResponds = (
         };
     }
 
-    switch (code) {
-        case 500:
-            logger.error(`${logging} => ${JSON.stringify(dataResponse)}`);
-            break;
-        case 404:
-            logger.error(`${logging} => ${JSON.stringify(dataResponse)}`);
-            break;
-        case 422:
-            logger.error(`${logging} => ${JSON.stringify(dataResponse)}`);
-            break;
-        default:
-            logger.info(`${logging} => ${JSON.stringify(dataResponse)}`);
-            break;
+    if (code != 200 && code != 201) {
+        logger.error(`${logging} => ${JSON.stringify(dataResponse)}`);
+    } else {
+        logger.info(`${logging} => ${JSON.stringify(dataResponse)}`);
     }
 
     return res.status(code).json(dataResponse);

@@ -1,9 +1,11 @@
 const UserModel = require("../models/UserModel.js");
 const moment = require("moment");
 const SendResponse = require("../helpers/response");
-const logger = require("../libs/logging.js");
+const tokenValidator = require("../utilities/ValidationJwt.js");
 
 exports.Create = async (req, res) => {
+    await tokenValidator.Authentication(req, res);
+
     let bodyCreate = {
         userName: req.body.userName,
         accountNumber: req.body.accountNumber,
@@ -36,6 +38,8 @@ exports.Create = async (req, res) => {
 };
 
 exports.Update = async (req, res) => {
+    await tokenValidator.Authentication(req, res);
+
     let bodyUpdate = {
         userName: req.body.userName,
         accountNumber: req.body.accountNumber,
@@ -83,6 +87,8 @@ exports.Update = async (req, res) => {
 };
 
 exports.ReadByAccountNumber = async (req, res) => {
+    await tokenValidator.Authentication(req, res);
+
     try {
         const userByAccountNumber = await UserModel.findOne({
             accountNumber: req.params.accountNumber,
@@ -118,6 +124,8 @@ exports.ReadByAccountNumber = async (req, res) => {
 };
 
 exports.ReadByIdentityNumber = async (req, res) => {
+    await tokenValidator.Authentication(req, res);
+
     try {
         const userByIdentityNumber = await UserModel.findOne({
             identityNumber: req.params.identityNumber,
@@ -153,6 +161,8 @@ exports.ReadByIdentityNumber = async (req, res) => {
 };
 
 exports.Delete = async (req, res) => {
+    await tokenValidator.Authentication(req, res);
+
     try {
         const deletedUser = await UserModel.findByIdAndDelete(req.params.id);
 

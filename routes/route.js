@@ -1,5 +1,6 @@
 module.exports = (app) => {
     const UserController = require("../controllers/UserController.js");
+    const AuthenticationController = require("../controllers/AuthenticationController.js");
 
     // route to create user
     app.post("/user/create", UserController.Create);
@@ -21,4 +22,7 @@ module.exports = (app) => {
 
     // route to delete user by ID
     app.delete("/user/delete/:id", UserController.Delete);
+
+    // route to generate token
+    app.post("/accesstoken", AuthenticationController.GenerateToken);
 };
