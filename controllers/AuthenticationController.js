@@ -65,7 +65,7 @@ function checkUser(dataUser) {
 async function createToken(dataUser) {
     let optionsJwt = {
         algorithm: "HS256",
-        expiresIn: "1d",
+        expiresIn: process.env.EXPIRED,
     };
 
     let userGenerateToken = {
@@ -76,7 +76,7 @@ async function createToken(dataUser) {
     try {
         var token = jsowebtoken.sign(
             userGenerateToken,
-            "TOPSECRETHENDRIAM",
+            process.env.SECRET_KEY,
             optionsJwt
         );
     } catch (err) {

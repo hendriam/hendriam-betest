@@ -16,7 +16,7 @@ exports.Authentication = async (req, res) => {
         try {
             jsowebtoken.verify(
                 req.headers["token"],
-                "TOPSECRETHENDRIAM",
+                process.env.SECRET_KEY,
                 (err, decode) => {
                     if (err) {
                         if (err.name == "TokenExpiredError") {
