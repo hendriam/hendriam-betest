@@ -1,0 +1,22 @@
+version: "3"
+services:
+  app:
+    image: ms-hendriam-betest
+    container_name: ms-hendriam-betest-app
+    environment:
+      - PORT=3000
+      - DATABASE_URL=mongodb://host.docker.internal:27017/db_hendriam_betest
+      - SECRET_KEY=1TOPSECRET
+      - EXPIRED=1d
+    expose:
+      - 3000
+    ports:
+      - 3001:3000
+    volumes:
+      - ./:/usr/src/app
+    working_dir: /usr/src/app
+  redis:
+    image: redis:alpine
+    container_name: redis-hendriam-betest
+    ports:
+      - 6379:6379

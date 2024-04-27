@@ -84,7 +84,6 @@ typings/
 **/hooks
 **/objects
 **/refs
-config
 description
 HEAD
 *.package_lock.json
