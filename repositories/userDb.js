@@ -10,7 +10,7 @@ exports.UserDbRepository = class UserDbRepository {
   }
 
   async getByAccountNumber({ accountNumber }) {
-    const user = await this.UserModel.findOne({
+    const user = await UserModel.findOne({
       accountNumber: accountNumber,
     });
 
@@ -22,7 +22,7 @@ exports.UserDbRepository = class UserDbRepository {
   }
 
   async getByIdentityNumber({ identityNumber }) {
-    const user = await this.UserModel.findOne({
+    const user = await UserModel.findOne({
       identityNumber: identityNumber,
     });
 
@@ -33,8 +33,8 @@ exports.UserDbRepository = class UserDbRepository {
     return user;
   }
 
-  async update({ id, ...userData }) {
-    const user = await this.UserModel.findByIdAndUpdate(id, userData, {
+  async update({ id, ...user }) {
+    const user = await UserModel.findByIdAndUpdate(id, user, {
       new: true,
     });
 
@@ -45,8 +45,8 @@ exports.UserDbRepository = class UserDbRepository {
     return user;
   }
 
-  async delete({ id }) {
-    const user = await this.UserModel.findByIdAndDelete(id);
+  async delete(user) {
+    const user = await UserModel.findByIdAndDelete(req.params.id);
 
     if (user == null) {
       throw new Error("User not found");

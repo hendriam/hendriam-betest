@@ -35,36 +35,25 @@ exports.UserCacheRepository = class UserCacheRepository {
     });
   }
 
-  async getByAccountNumber({ accountNumber }) {
+  async getByAccountNumber(user) {
     try {
-      const key = userByAccountNumberPrefix + accountNumber;
-
-      console.log(key);
-
+      const key = userByAccountNumberPrefix + user.accountNumber;
       const data = await this.UserCache.get(key);
-
-      console.log(data);
 
       return JSON.parse(data);
     } catch (err) {
-      console.log("repo-cache", err.stack);
-      throw new Error(`errUserNotFound`);
+      throw new Error("User not found");
     }
   }
 
-  async getByIdentityNumber({ identityNumber }) {
-    console.log(identityNumber);
-
+  async getByIdentityNumber(user) {
     try {
-      const key = userByIdentityNumberPrefix + identityNumber;
-      console.log(key);
+      const key = userByIdentityNumberPrefix + user.identityNumber;
       const data = await this.UserCache.get(key);
-
-      console.log(data);
 
       return JSON.parse(data);
     } catch (err) {
-      throw new Error(`errUserNotFound`);
+      throw new Error("User not found");
     }
   }
 
