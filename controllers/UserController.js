@@ -1,196 +1,202 @@
 const UserModel = require("../models/UserModel.js");
-const moment = require("moment");
+const UserCache = require("../models/UserCache.js");
+
 const SendResponse = require("../helpers/response");
 const tokenValidator = require("../utilities/ValidationJwt.js");
+const { UserService } = require("../services/UserService.js");
 
-exports.Create = async (req, res) => {
-    await tokenValidator.Authentication(req, res);
+const { UserDbRepository } = require("../repositories/userDb.js");
+const { UserCacheRepository } = require("../repositories/userCache.js");
 
-    let bodyCreate = {
-        userName: req.body.userName,
-        accountNumber: req.body.accountNumber,
-        emailAddress: req.body.emailAddress,
-        identityNumber: req.body.identityNumber,
-        created_at: moment().format("YYYY-MM-DD HH:mm:ss"),
-        updated_at: moment().format("YYYY-MM-DD HH:mm:ss"),
-    };
+const userRepository = new UserDbRepository(UserModel);
+const userCacheRepository = new UserCacheRepository(UserCache);
 
-    try {
-        const NewUser = new UserModel(bodyCreate);
-        const savedUser = await NewUser.save();
+const userService = new UserService(userRepository, userCacheRepository);
 
-        return SendResponse(
-            res,
-            "Ok",
-            savedUser,
-            201,
-            "[CREATE-USER][SUCCESSFULLY]"
-        );
-    } catch (err) {
-        return SendResponse(
-            res,
-            err._message,
-            err.errors,
-            422,
-            "[CREATE-USER][FAILED]"
-        );
-    }
+exports.Create = async function (req, res) {
+  await tokenValidator.Authentication(req, res);
+
+  let bodyCreate = {
+    userName: req.body.userName,
+    accountNumber: req.body.accountNumber,
+    emailAddress: req.body.emailAddress,
+    identityNumber: req.body.identityNumber,
+  };
+
+  try {
+    const savedUser = await userService.createUser(bodyCreate);
+
+    return SendResponse(
+      res,
+      "Ok",
+      savedUser.value(),
+      201,
+      "[CREATE-USER][SUCCESSFULLY]",
+    );
+  } catch (err) {
+    console.log(err.stack);
+
+    return SendResponse(
+      res,
+      err._message,
+      err.errors,
+      422,
+      "[CREATE-USER][FAILED]",
+    );
+  }
 };
 
-exports.Update = async (req, res) => {
-    await tokenValidator.Authentication(req, res);
+exports.Update = async function (req, res) {
+  await tokenValidator.Authentication(req, res);
 
-    let bodyUpdate = {
-        userName: req.body.userName,
-        accountNumber: req.body.accountNumber,
-        emailAddress: req.body.emailAddress,
-        identityNumber: req.body.identityNumber,
-        updated_at: moment().format("YYYY-MM-DD HH:mm:ss"),
-    };
+  let bodyUpdate = {
+    userName: req.body.userName,
+    accountNumber: req.body.accountNumber,
+    emailAddress: req.body.emailAddress,
+    identityNumber: req.body.identityNumber,
+  };
 
-    try {
-        const updatedUser = await UserModel.findByIdAndUpdate(
-            req.params.id,
-            bodyUpdate,
-            {
-                new: true,
-            }
-        );
+  try {
+    const updatedUser = await userService.updateUser(req.params.id, bodyUpdate);
 
-        // check if id is exist
-        if (updatedUser == null) {
-            return SendResponse(
-                res,
-                "_id is not exist",
-                updatedUser,
-                404,
-                "[UPDATE-USER][FAILED]"
-            );
-        }
+    return SendResponse(
+      res,
+      "Ok",
+      updatedUser.value(),
+      200,
+      "[UPDATE-USER][SUCCESSFULLY]",
+    );
+  } catch (err) {
+    console.log(err.stack);
 
-        return SendResponse(
-            res,
-            "Ok",
-            updatedUser,
-            200,
-            "[UPDATE-USER][SUCCESSFULLY]"
-        );
-    } catch (err) {
-        return SendResponse(
-            res,
-            "Internal Server Error",
-            null,
-            500,
-            "[UPDATE-USER][FAILED]"
-        );
+    // check if id is exist
+    if (err.message === "errUserNotFound") {
+      return SendResponse(
+        res,
+        "_id is not exist",
+        null,
+        404,
+        "[UPDATE-USER][FAILED]",
+      );
     }
+
+    return SendResponse(
+      res,
+      "Internal Server Error",
+      null,
+      500,
+      "[UPDATE-USER][FAILED]",
+    );
+  }
 };
 
-exports.ReadByAccountNumber = async (req, res) => {
-    await tokenValidator.Authentication(req, res);
+exports.ReadByAccountNumber = async function (req, res) {
+  await tokenValidator.Authentication(req, res);
 
-    try {
-        const userByAccountNumber = await UserModel.findOne({
-            accountNumber: req.params.accountNumber,
-        });
+  try {
+    const userByAccountNumber = await userService.getUserByAccountNumber(
+      req.params.accountNumber,
+    );
 
-        // check if id is exist
-        if (userByAccountNumber == null) {
-            return SendResponse(
-                res,
-                "_id is not exist",
-                null,
-                404,
-                "[GET-USER][FAILED]"
-            );
-        }
+    return SendResponse(
+      res,
+      "Ok",
+      userByAccountNumber.value(),
+      200,
+      "[GET-USER][FOUND]",
+    );
+  } catch (err) {
+    console.log(err.stack);
 
-        return SendResponse(
-            res,
-            "Ok",
-            userByAccountNumber,
-            200,
-            "[GET-USER][FOUND]"
-        );
-    } catch (err) {
-        return SendResponse(
-            res,
-            "Internal Server Error",
-            null,
-            500,
-            "[GET-USER][ERROR]"
-        );
+    if (err.message === "errUserNotFound") {
+      return SendResponse(
+        res,
+        "_id is not exist",
+        null,
+        404,
+        "[UPDATE-USER][FAILED]",
+      );
     }
+
+    return SendResponse(
+      res,
+      "Internal Server Error",
+      null,
+      500,
+      "[GET-USER][ERROR]",
+    );
+  }
 };
 
-exports.ReadByIdentityNumber = async (req, res) => {
-    await tokenValidator.Authentication(req, res);
+exports.ReadByIdentityNumber = async function (req, res) {
+  await tokenValidator.Authentication(req, res);
 
-    try {
-        const userByIdentityNumber = await UserModel.findOne({
-            identityNumber: req.params.identityNumber,
-        });
+  try {
+    const userByIdentityNumber = await userService.getUserByIdentityNumber(
+      req.params.identityNumber,
+    );
 
-        // check if id is exist
-        if (userByIdentityNumber === null) {
-            return SendResponse(
-                res,
-                "_id is not exist",
-                null,
-                404,
-                "[GET-USER][NOT FOUND]"
-            );
-        }
-
-        return SendResponse(
-            res,
-            "Ok",
-            userByIdentityNumber,
-            200,
-            "[GET-USER][FOUND]"
-        );
-    } catch (err) {
-        return SendResponse(
-            res,
-            "Internal Server Error",
-            null,
-            500,
-            "[GET-USER][ERROR]"
-        );
+    return SendResponse(
+      res,
+      "Ok",
+      userByIdentityNumber.value(),
+      200,
+      "[GET-USER][FOUND]",
+    );
+  } catch (err) {
+    console.log(err.stack);
+    if (err.message === "errUserNotFound") {
+      return SendResponse(
+        res,
+        "_id is not exist",
+        null,
+        404,
+        "[UPDATE-USER][FAILED]",
+      );
     }
+
+    return SendResponse(
+      res,
+      "Internal Server Error",
+      null,
+      500,
+      "[GET-USER][ERROR]",
+    );
+  }
 };
 
-exports.Delete = async (req, res) => {
-    await tokenValidator.Authentication(req, res);
+exports.Delete = async function (req, res) {
+  await tokenValidator.Authentication(req, res);
 
-    try {
-        const deletedUser = await UserModel.findByIdAndDelete(req.params.id);
+  try {
+    const deletedUser = await userService.deleteUser(req.params.id);
 
-        // check if id is exist
-        if (deletedUser === null) {
-            return SendResponse(
-                res,
-                "_id is not exist",
-                null,
-                404,
-                "[DELETE-USER][NOT FOUND]"
-            );
-        }
+    return SendResponse(
+      res,
+      "Ok",
+      deletedUser.value(),
+      200,
+      "[DELETE-USER][SUCCESSFULLY]",
+    );
+  } catch (err) {
+    console.log(err.stack);
 
-        return SendResponse(
-            res,
-            "Ok",
-            deletedUser._message,
-            200,
-            "[DELETE-USER][SUCCESSFULLY]"
-        );
-    } catch (err) {
-        return SendResponse(
-            res,
-            "Internal Server Error",
-            null,
-            500,
-            "[DELETE-USER][ERROR]"
-        );
+    if (err.message === "errUserNotFound") {
+      return SendResponse(
+        res,
+        "_id is not exist",
+        null,
+        404,
+        "[UPDATE-USER][FAILED]",
+      );
     }
+
+    return SendResponse(
+      res,
+      "Internal Server Error",
+      null,
+      500,
+      "[DELETE-USER][ERROR]",
+    );
+  }
 };
