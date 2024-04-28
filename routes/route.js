@@ -1,27 +1,29 @@
-const UserController = require("../controllers/UserController.js");
+const { UserController } = require("../controllers/UserController.js");
 const AuthenticationController = require("../controllers/AuthenticationController.js");
 
 module.exports = (app) => {
-  // route to create user
-  app.post("/user/create", UserController.Create);
+  const userController = new UserController();
 
   // route to create user
-  app.put("/user/update/:id", UserController.Update);
+  app.post("/user/create", userController.Create);
+
+  // route to create user
+  app.put("/user/update/:id", userController.Update);
 
   // route to get user by accountNumber
   app.get(
     "/user/accountNumber/:accountNumber",
-    UserController.ReadByAccountNumber,
+    userController.ReadByAccountNumber,
   );
 
   // route to get user by IdentityNumber
   app.get(
     "/user/identityNumber/:identityNumber",
-    UserController.ReadByIdentityNumber,
+    userController.ReadByIdentityNumber,
   );
 
   // route to delete user by ID
-  app.delete("/user/delete/:id", UserController.Delete);
+  app.delete("/user/delete/:id", userController.Delete);
 
   // route to generate token
   app.post("/accesstoken", AuthenticationController.GenerateToken);

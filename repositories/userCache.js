@@ -35,42 +35,25 @@ exports.UserCacheRepository = class UserCacheRepository {
     });
   }
 
-  async getByAccountNumber({ accountNumber }) {
+  async getByAccountNumber(user) {
     try {
-      const key = userByAccountNumberPrefix + accountNumber;
-
-      console.log(key);
-
+      const key = userByAccountNumberPrefix + user.accountNumber;
       const data = await this.UserCache.get(key);
-      if (data == null) {
-        throw new Error(`errUserNotFound`);
-      }
-
-      console.log(data);
 
       return JSON.parse(data);
     } catch (err) {
-      console.log("repo-cache", err.stack);
-      throw new Error(`errUserNotFound`);
+      throw new Error("User not found");
     }
   }
 
-  async getByIdentityNumber({ identityNumber }) {
-    console.log(identityNumber);
-
+  async getByIdentityNumber(user) {
     try {
-      const key = userByIdentityNumberPrefix + identityNumber;
-      console.log(key);
+      const key = userByIdentityNumberPrefix + user.identityNumber;
       const data = await this.UserCache.get(key);
-      if (data == null) {
-        throw new Error(`errUserNotFound`);
-      }
-
-      console.log(data);
 
       return JSON.parse(data);
     } catch (err) {
-      throw new Error(`errUserNotFound`);
+      throw new Error("User not found");
     }
   }
 
@@ -79,8 +62,8 @@ exports.UserCacheRepository = class UserCacheRepository {
   }
 
   async delete(user) {
-    await this.deleteByAccountNumber(user);
-    await this.deleteByIdentityNumber(user);
+    await deleteByAccountNumber(user);
+    await deleteByIdentityNumber(user);
   }
 
   async deleteByAccountNumber(user) {

@@ -6,53 +6,50 @@ exports.UserDbRepository = class UserDbRepository {
   async save(user) {
     const userDb = new this.UserModel(user);
 
-    const test = await userDb.save();
-    console.log("test", test);
-
-    return test;
+    return await userDb.save();
   }
 
   async getByAccountNumber({ accountNumber }) {
-    const user = await this.UserModel.findOne({
+    const user = await UserModel.findOne({
       accountNumber: accountNumber,
     });
 
     if (user == null) {
-      throw new Error(`errUserNotFound`);
+      throw new Error("User not found");
     }
 
     return user;
   }
 
   async getByIdentityNumber({ identityNumber }) {
-    const user = await this.UserModel.findOne({
+    const user = await UserModel.findOne({
       identityNumber: identityNumber,
     });
 
     if (user == null) {
-      throw new Error(`errUserNotFound`);
+      throw new Error("User not found");
     }
 
     return user;
   }
 
-  async update({ id, ...userData }) {
-    const user = await this.UserModel.findByIdAndUpdate(id, userData, {
+  async update({ id, ...user }) {
+    const user = await UserModel.findByIdAndUpdate(id, user, {
       new: true,
     });
 
     if (user == null) {
-      throw new Error(`errUserNotFound`);
+      throw new Error("User not found");
     }
 
     return user;
   }
 
-  async delete({ id }) {
-    const user = await this.UserModel.findByIdAndDelete(id);
+  async delete(user) {
+    const user = await UserModel.findByIdAndDelete(req.params.id);
 
     if (user == null) {
-      throw new Error(`errUserNotFound`);
+      throw new Error("User not found");
     }
 
     return user;
