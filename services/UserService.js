@@ -1,4 +1,4 @@
-const { User } = require("../domains/users.js");
+const User = require("../domains/users.js");
 
 exports.UserService = class UserService {
   constructor(userRepository, userCacheRepository) {
@@ -6,37 +6,41 @@ exports.UserService = class UserService {
     this.userCacheRepository = userCacheRepository;
   }
 
-  createUser(newUser) {
-    const userData = {
-      userName: newUser.userName,
-      accountNumber: newUser.accountNumber,
-      emailAddress: newUser.emailAddress,
-      identityNumber: newUser.identityNumber,
-      created_at: new Date(),
-      updated_at: new Date(),
-    };
+  createUser(userData) {
+    const user = new User(this.userRepository, {
+      id: userData.id,
+      userName: userData.userName,
+      accountNumber: userData.accountNumber,
+      emailAddress: userData.emailAddress,
+      identityNumber: userData.identityNumber,
+      created_at: userData.created_at,
+      updated_at: userData.updated_at,
+    });
 
-    const user = new User(this.userRepository, userData);
     user.save();
 
-    const userCache = new User(this.userCacheRepository, user.value());
+    const userCache = new User(this.userCacheRepository, {
+      id: userData.id,
+      userName: userData.userName,
+      accountNumber: userData.accountNumber,
+      emailAddress: userData.emailAddress,
+      identityNumber: userData.identityNumber,
+      created_at: userData.created_at,
+      updated_at: userData.updated_at,
+    });
+
     userCache.save();
 
-    return user;
+    return userData;
   }
 
   async getUserByAccountNumber(accountNumber) {
-    const userCache = await this.getUserByAccountNumberCache(accountNumber);
-    if (userCache != null) {
-      return userCache;
+    const user = await this.getUserByAccountNumberCache(accountNumber);
+    if (user != null) {
+      return user;
     }
 
-    const user = await this.getUserByAccountNumberMain(accountNumber);
-    if (user == null) {
-      throw new Error(`errUserNotFound`);
-    }
-
-    return user;
+    return await this.getUserByAccountNumberMain(accountNumber);
   }
 
   async getUserByAccountNumberCache(accountNumber) {
@@ -45,11 +49,10 @@ exports.UserService = class UserService {
         accountNumber: accountNumber,
       });
 
-      await user.getByAccountNumber();
+      await user.getUserByAccountNumber();
 
       return user;
     } catch (err) {
-      console.log("[service] getUserByAccountNumberCache err", err);
       return null;
     }
   }
@@ -60,7 +63,7 @@ exports.UserService = class UserService {
         accountNumber: accountNumber,
       });
 
-      await user.getByAccountNumber();
+      await user.getUserByAccountNumber();
 
       return user;
     } catch (err) {
@@ -69,17 +72,12 @@ exports.UserService = class UserService {
   }
 
   async getUserByIdentityNumber(identityNumber) {
-    const userCache = await this.getUserByIdentityNumberCache(identityNumber);
-    if (userCache != null) {
-      return userCache;
+    const user = await this.getUserByIdentityNumberCache(identityNumber);
+    if (user != null) {
+      return user;
     }
 
-    const user = await this.getUserByIdentityNumberMain(identityNumber);
-    if (user == null) {
-      throw new Error(`errUserNotFound`);
-    }
-
-    return user;
+    return await this.getUserByIdentityNumberMain(identityNumber);
   }
 
   async getUserByIdentityNumberCache(identityNumber) {
@@ -88,7 +86,7 @@ exports.UserService = class UserService {
         identityNumber: identityNumber,
       });
 
-      await user.getByIdentityNumber();
+      await user.getUserByIdentityNumber();
 
       return user;
     } catch (err) {
@@ -102,7 +100,7 @@ exports.UserService = class UserService {
         identityNumber: identityNumber,
       });
 
-      await user.getByIdentityNumber();
+      await user.getUserByIdentityNumber();
 
       return user;
     } catch (err) {
@@ -117,27 +115,30 @@ exports.UserService = class UserService {
       accountNumber: newUser.accountNumber,
       emailAddress: newUser.emailAddress,
       identityNumber: newUser.identityNumber,
-      updated_at: new Date(),
+      updated_at: newUser.updated_at,
     };
+
+    const userCache = new User(this.userCacheRepository, userData);
+    await userCache.update();
+
     const user = new User(this.userRepository, userData);
     await user.update();
-
-    console.log("[service] updateUser", user.value());
-
-    const userCache = new User(this.userCacheRepository, user.value());
-    await userCache.update();
 
     return user;
   }
 
   async deleteUser(userId) {
+    const userCache = new User(this.userCacheRepository, {
+      id: userId,
+    });
+
+    await userCache.delete();
+
     const user = new User(this.userRepository, {
       id: userId,
     });
-    await user.delete();
 
-    const userCache = new User(this.userCacheRepository, user.value());
-    await userCache.delete();
+    await user.delete();
 
     return user;
   }
