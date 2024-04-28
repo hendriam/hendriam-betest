@@ -8,6 +8,8 @@ services:
       - DATABASE_URL=mongodb://host.docker.internal:27017/db_hendriam_betest
       - SECRET_KEY=1TOPSECRET
       - EXPIRED=1d
+      - HOST_REDIS=redis
+      - PORT_REDIS=6379
     expose:
       - 3000
     ports:
