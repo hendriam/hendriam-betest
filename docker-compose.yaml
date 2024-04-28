@@ -1,15 +1,21 @@
 version: "3"
 services:
   app:
+    build: .
     image: ms-hendriam-betest
     container_name: ms-hendriam-betest-app
     environment:
       - PORT=3000
-      - DATABASE_URL=mongodb://host.docker.internal:27017/db_hendriam_betest
+      - DATABASE_URL=mongodb://mongo-db:27017/db_hendriam_betest
       - SECRET_KEY=1TOPSECRET
       - EXPIRED=1d
       - HOST_REDIS=redis
       - PORT_REDIS=6379
+      - REDIS_URL=redis://redis-hendriam-betest:6379
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.hendriam-betest.rule=Host(`betest.hendriam.com`)"
+      - "traefik.http.routers.hendriam-betest.tls=true"
     expose:
       - 3000
     ports:
@@ -17,8 +23,15 @@ services:
     volumes:
       - ./:/usr/src/app
     working_dir: /usr/src/app
+
+    # entrypoint: sleep
+    # command: infinity
   redis:
     image: redis:alpine
     container_name: redis-hendriam-betest
     ports:
       - 6379:6379
+networks:
+  default:
+    external: true
+    name: devel

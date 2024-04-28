@@ -11,23 +11,37 @@ const dbConfig = require("./config/database.js");
 
 // Connecting to the database
 mongoose
-    .connect(dbConfig.url)
-    .then(() => {
-        logger.info(`[MongoDB] Successfully connected to the database`);
-    })
-    .catch((err) => {
-        logger.error(
-            `[MongoDB] Could not connect to the database. Exiting now... ${err}`
-        );
-        process.exit();
-    });
+  .connect(dbConfig.url)
+  .then(() => {
+    logger.info(`[MongoDB] Successfully connected to the database`);
+  })
+  .catch((err) => {
+    logger.error(
+      `[MongoDB] Could not connect to the database. Exiting now... ${err}`,
+    );
+    process.exit();
+  });
+
+const cache = require("./models/UserCache.js");
+// Connecting to the cache
+cache
+  .connect()
+  .then(() => {
+    logger.info(`[Redis] Successfully connected to the cache`);
+  })
+  .catch((err) => {
+    logger.error(
+      `[Redis] Could not connect to the cache. Exiting now... ${err}`,
+    );
+    process.exit();
+  });
 
 // Initial bodyParser package
 const bodyParser = require("body-parser");
 app.use(
-    bodyParser.urlencoded({
-        extended: true,
-    })
+  bodyParser.urlencoded({
+    extended: true,
+  }),
 );
 app.use(bodyParser.json());
 
